@@ -16,8 +16,7 @@ class CartController
         private ProductRepository $productRepository,
         private CartView $cartView,
         private CartManager $cartManager,
-    ) {
-    }
+    ) {}
 
     public function addToCart(RequestInterface $request): ResponseInterface
     {
@@ -49,7 +48,7 @@ class CartController
     }
 
 
-     public function get(RequestInterface $request): ResponseInterface
+    public function getCart(RequestInterface $request): ResponseInterface
     {
         $response = new JsonResponse();
         $cart = $this->cartManager->getCart();

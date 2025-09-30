@@ -2,14 +2,14 @@
 
 declare(strict_types = 1);
 
-namespace Raketa\BackendTestTask\Domain;
+namespace Raketa\BackendTestTask\Entity;
 
 final class Cart
 {
     public function __construct(
         readonly private string $uuid,
         readonly private Customer $customer,
-        readonly private string $paymentMethod,
+        private string $paymentMethod,
         private array $items,
     ) {
     }

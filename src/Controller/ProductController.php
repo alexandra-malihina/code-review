@@ -4,31 +4,49 @@ declare(strict_types=1);
 
 namespace Raketa\BackendTestTask\Controller;
 
+use Exception;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Raketa\BackendTestTask\View\ProductsView;
+use Raketa\BackendTestTask\Entity\Product;
+use Raketa\BackendTestTask\Repository\ProductRepository;
+use Raketa\BackendTestTask\Response\JsonResponse;
+use Raketa\BackendTestTask\View\ProductView;
 
 class ProductController
 {
-    public function __construct(
-        private ProductsView $productsVew
-    ) {}
-
-    public function get(RequestInterface $request): ResponseInterface
+    public function getByCategory(RequestInterface $request): ResponseInterface
     {
         $response = new JsonResponse();
 
         $rawRequest = json_decode($request->getBody()->getContents(), true);
 
+        $data = [
+            'status' => 'success',
+            'message' => 'success',
+            'data' => []
+        ];
+
+        try {
+            $products = new ProductRepository();
+            $products = $products->getByCategory($rawRequest['category']);
+            $data = array_map(
+                fn(Product $product) => new ProductView($product)->toArray(),
+                $products
+            );
+        } catch (Exception $e) {
+            $data['status'] = 'error';
+            $data['message'] = $e->getMessage();
+            $response = $response->withStatus(400);
+        }
+
+        // можно заменить на withbody
         $response->getBody()->write(
             json_encode(
-                $this->productsVew->toArray($rawRequest['category']),
+                $data,
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
             )
         );
 
-        return $response
-            ->withHeader('Content-Type', 'application/json; charset=utf-8')
-            ->withStatus(200);
+        return $response;
     }
 }

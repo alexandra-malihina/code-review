@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Raketa\BackendTestTask\Entity;
 
@@ -15,8 +15,7 @@ readonly class Product
         private string $description,
         private string $thumbnail,
         private float $price,
-    ) {
-    }
+    ) {}
 
     public function getId(): int
     {
@@ -28,7 +27,7 @@ readonly class Product
         return $this->uuid;
     }
 
-    public function isActive(): bool
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }

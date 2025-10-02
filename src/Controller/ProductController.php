@@ -8,8 +8,9 @@ use Exception;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Raketa\BackendTestTask\Entity\Product;
+use Raketa\BackendTestTask\Infrastructure\Response\JsonResponse;
 use Raketa\BackendTestTask\Repository\ProductRepository;
-use Raketa\BackendTestTask\Response\JsonResponse;
+
 use Raketa\BackendTestTask\View\ProductView;
 
 class ProductController

@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Raketa\BackendTestTask\Repository;
+namespace Raketa\BackendTestTask\Infrastructure\Manager;
 
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -13,9 +13,9 @@ class CartManager extends ConnectorFacade
 {
     public $logger;
 
-    public function __construct($host, $port, $password)
+    public function __construct()
     {
-        parent::__construct($host, $port, $password, 1);
+        parent::__construct();
         parent::build();
     }
 

@@ -10,11 +10,11 @@ use Raketa\BackendTestTask\Repository\ProductRepository;
 readonly class CartView
 {
     public function __construct(
-        private ProductRepository $productRepository
+        private Cart $cart
     ) {
     }
 
-    public function toArray(Cart $cart): array
+    public function toArray(): array
     {
         $data = [
             'uuid' => $cart->getUuid(),

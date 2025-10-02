@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Raketa\BackendTestTask\Response;
+namespace Raketa\BackendTestTask\Infrastructure\Response;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;

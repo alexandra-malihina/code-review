@@ -6,17 +6,18 @@ namespace Raketa\BackendTestTask\Infrastructure\Manager;
 
 use Exception;
 use Psr\Log\LoggerInterface;
-use Raketa\BackendTestTask\Domain\Cart;
-use Raketa\BackendTestTask\Infrastructure\ConnectorFacade;
+use Raketa\BackendTestTask\Entity\Cart;
+use Raketa\BackendTestTask\Entity\Customer;
+use Raketa\BackendTestTask\Infrastructure\Facade\RedisFacade;
 
-class CartManager extends ConnectorFacade
+class CartManager
 {
-    public $logger;
+    protected $logger;
+    protected $redisFacade;
 
     public function __construct()
     {
-        parent::__construct();
-        parent::build();
+        $this->redisFacade = new RedisFacade();
     }
 
     public function setLogger(LoggerInterface $logger)
@@ -25,28 +26,45 @@ class CartManager extends ConnectorFacade
     }
 
     /**
-     * @inheritdoc
+     * Метод сохранения корзины, при успехе возвращает экземпляр корзины, при неудаче - null
+     * @param \Raketa\BackendTestTask\Entity\Cart $cart
+     * @param mixed $ex
+     * @return Cart|null
      */
     public function saveCart(Cart $cart)
     {
         try {
-            $this->connector->set($cart, session_id());
+            $this->redisFacade->set('cart:' . session_id(), $cart, 24 * 60 * 60);
         } catch (Exception $e) {
-            $this->logger->error('Error');
+            $this->logger->error($e);
+            return null;
         }
+        return $cart;
     }
 
     /**
-     * @return ?Cart
+     * Метод получения корзины. При успехе возвращает экземпляр корзины, при неудаче - null
+     * @param \Raketa\BackendTestTask\Entity\Customer $customer
+     * @return \Raketa\BackendTestTask\Entity\Cart|null
      */
-    public function getCart()
+    public function getCart(Customer $customer) : Cart|null
     {
+        $cart = null;
         try {
-            return $this->connector->get(session_id());
+            $cart = $this->redisFacade->get('cart:' . session_id());
         } catch (Exception $e) {
-            $this->logger->error('Error');
+            $this->logger->error($e);
+            return null;
         }
 
-        return new Cart(session_id(), []);
+        if (empty($cart)) {
+            $cart = new Cart(
+                session_id(),
+                $customer,
+                '',
+                []
+            );
+        }
+        return $cart;
     }
 }

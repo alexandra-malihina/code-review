@@ -1,10 +1,11 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Raketa\BackendTestTask\Infrastructure\Facade;
 
 use Raketa\BackendTestTask\Infrastructure\Connector\RedisConnector;
+use Raketa\BackendTestTask\Infrastructure\Exception\RedisConnectorException;
 use Redis;
 use RedisException;
 
@@ -16,7 +17,7 @@ class  RedisFacade
     private ?string $password = null;
     private ?int $dbindex = null;
 
-    protected $connection;
+    protected $connector;
 
     public function __construct()
     {
@@ -24,35 +25,47 @@ class  RedisFacade
         // $this->port = $_ENV['REDIS_PORT'];
         // $this->password = $_ENV['REDIS_PASSWORD'];
         // $this->dbindex = $_ENV['REDIS_DBINDEX'];
+
+        $this->connector = RedisConnector::getInstance();
     }
-
-    public function test() {
-        $this->build();
-    }
-
-    protected function connection () {
-
-    }
-
-    protected function build(): void
+    protected function connect()
     {
-        $redis = new Redis();
-
         try {
-            $isConnected = $redis->isConnected();
-            if (! $isConnected && $redis->ping('Pong')) {
-                $isConnected = $redis->connect(
-                    $this->host,
-                    $this->port,
-                );
+            if (! $this->connector->isConnected()) {
+                $this->connector->connect($this->host, $this->port);
+                if (!empty($this->password)) {
+                    $this->connector->auth($this->password);
+                }
+                if (! empty($this->dbindex)) {
+                    $this->connector->select($this->dbindex);
+                }
+            }
+            $this->connector->checkConnection();
+        } catch (RedisException $e) {
+            throw new RedisConnectorException('RedisConnector connect error:' . $e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    public function set(string $key, $value, $ex = null)
+    {
+        $this->connect();
+        try {
+            $this->connector->set($key, $value, $ex);
+        } catch (RedisException $e) {
+            throw new RedisConnectorException('RedisConnector set error: ' . $e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    public function get($key)
+    {
+        $this->connect();
+        try {
+            if ($this->connector->has($key)) {
+                return $this->connector->get($key);
             }
         } catch (RedisException $e) {
+            throw new RedisConnectorException('RedisConnector get error: ' . $e->getMessage(), $e->getCode(), $e);
         }
-
-        if ($isConnected) {
-            $redis->auth($this->password);
-            $redis->select($this->dbindex);
-            $this->connector = new RedisConnector($redis);
-        }
+        return null;
     }
 }

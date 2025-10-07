@@ -1,48 +1,77 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Raketa\BackendTestTask\Infrastructure\Connector;
 
 use Raketa\BackendTestTask\Domain\Cart;
-use Raketa\BackendTestTask\Infrastructure\ConnectorException;
+use Raketa\BackendTestTask\Helper\Singleton;
+use Raketa\BackendTestTask\Infrastructure\Exception\ConnectorException;
 use Redis;
 use RedisException;
 
-class RedisConnector
+class RedisConnector extends Singleton
 {
     private Redis $redis;
 
-    public function __construct($redis)
+    protected function __construct()
+    {
+        $this->redis = new Redis;
+    }
+
+    public function isConnected()
+    {
+        return $this->redis->isConnected();
+    }
+
+    public function connect($host, $port)
+    {
+        $this->redis->connect($host, $port);
+    }
+
+    public function disconnect()
+    {
+        $this->redis->disconnect();
+    }
+
+    public function auth($password)
+    {
+        $this->redis->auth($password);
+    }
+
+    public function select($db)
+    {
+        $this->redis->select($db);
+    }
+
+    public function checkConnection()
+    {
+        $this->redis->ping();
+    }
+    public function setConnection($redis)
     {
         $this->redis = $redis;
     }
 
-    /**
-     * @throws ConnectorException
-     */
     public function get($key)
     {
-        try {
-            return unserialize($this->redis->get($key));
-        } catch (RedisException $e) {
-            throw new ConnectorException('Connector error', $e->getCode(), $e);
-        }
+        return unserialize($this->redis->get($key));
     }
 
-    /**
-     * @throws ConnectorException
-     */
-    public function set(string $key, $value)
+    public function set(string $key, $value, ?int $ex = null)
     {
-        try {
-            $this->redis->setex($key, 24 * 60 * 60, serialize($value));
-        } catch (RedisException $e) {
-            throw new ConnectorException('Connector error', $e->getCode(), $e);
+        $data = [
+            $key,
+            serialize($value)
+        ];
+        if (!empty($ex)) {
+            $data[] = $ex;
         }
+
+        $this->redis->set(...$data);
     }
 
-    public function has($key): bool
+    public function has($key)
     {
         return $this->redis->exists($key);
     }

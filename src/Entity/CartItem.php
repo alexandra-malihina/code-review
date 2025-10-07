@@ -12,9 +12,10 @@ final readonly class CartItem
     public function __construct(
         private string $uuid,
         private string $productUuid,
+        private float $price,
         private int $quantity,
     ) {
-        $this->product = new ProductRepository()->getByUuid($uuid);
+        $this->product = (new ProductRepository())->getByUuid($productUuid);
     }
 
     public function getUuid(): string
@@ -29,7 +30,7 @@ final readonly class CartItem
 
     public function getPrice(): float
     {
-        return $this->product->getPrice();
+        return $this->price;
     }
 
     public function getQuantity(): int

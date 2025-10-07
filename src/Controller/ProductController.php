@@ -30,7 +30,7 @@ class ProductController
         try {
             $products = new ProductRepository();
             $products = $products->getByCategory($rawRequest['category']);
-            $data = array_map(
+            $data['data'] = array_map(
                 fn(Product $product) => new ProductView($product)->toArray(),
                 $products
             );
